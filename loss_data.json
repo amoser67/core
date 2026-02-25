@@ -1,0 +1,73 @@
+[
+  {"batch_size": 64, "lr": 0.005, "k": 5, "num_epochs": 10, "loss": 0.25093756020069125},
+  {"batch_size": 64, "lr": 0.01, "k": 5, "num_epochs": 10, "loss": 0.17581626176834106},
+  {"batch_size": 64, "lr": 0.02, "k": 5, "num_epochs": 10, "loss": 0.12260274738073348},
+  {"batch_size": 64, "lr": 0.04, "k": 5, "num_epochs": 10, "loss": inf},
+  {"batch_size": 64, "lr": 0.06, "k": 5, "num_epochs": 10, "loss": nan},
+  {"batch_size": 64, "lr": 0.08, "k": 5, "num_epochs": 10, "loss": nan},
+  {"batch_size": 64, "lr": 0.1, "k": 5, "num_epochs": 10, "loss": nan},
+  
+  {"batch_size": 32, "lr": 0.005, "k": 5, "num_epochs": 10, "loss": 0.18858327567577363},
+  {"batch_size": 32, "lr": 0.01, "k": 5, "num_epochs": 10, "loss": 0.13118283897638322},
+  {"batch_size": 32, "lr": 0.02, "k": 5, "num_epochs": 10, "loss": 0.09075873419642448},
+  {"batch_size": 32, "lr": 0.04, "k": 5, "num_epochs": 10, "loss": nan},
+  {"batch_size": 32, "lr": 0.06, "k": 5, "num_epochs": 10, "loss": nan},
+  {"batch_size": 32, "lr": 0.08, "k": 5, "num_epochs": 10, "loss": nan},
+  {"batch_size": 32, "lr": 0.1, "k": 5, "num_epochs": 10, "loss": nan},
+  
+  {"batch_size": 32, "lr": 0.005, "k": 5, "num_epochs": 14, "loss": 0.15725236833095552},
+  {"batch_size": 32, "lr": 0.01, "k": 5, "num_epochs": 14, "loss": 0.10636022984981537},
+  {"batch_size": 32, "lr": 0.02, "k": 5, "num_epochs": 14, "loss": 0.08190331310033798},
+  {"batch_size": 32, "lr": 0.03, "k": 5, "num_epochs": 14, "loss": 0.08865405544638634},
+  
+  {"batch_size": 32, "lr": 0.005, "k": 5, "num_epochs": 16, "loss": 0.1461873471736908},
+  {"batch_size": 32, "lr": 0.01, "k": 5, "num_epochs": 16, "loss": 0.09581035897135734},
+  {"batch_size": 32, "lr": 0.02, "k": 5, "num_epochs": 16, "loss": 0.06980110481381416},
+  {"batch_size": 32, "lr": 0.03, "k": 5, "num_epochs": 16, "loss": 0.060121668875217436},
+  
+  {"batch_size": 32, "lr": 0.005, "k": 5, "num_epochs": 18, "loss": 0.1323233500123024},
+  {"batch_size": 32, "lr": 0.01, "k": 5, "num_epochs": 18, "loss": 0.09029655456542969},
+  {"batch_size": 32, "lr": 0.02, "k": 5, "num_epochs": 18, "loss": 0.06914252862334251},
+  {"batch_size": 32, "lr": 0.03, "k": 5, "num_epochs": 18, "loss": 0.07155151814222335},
+  
+  {"batch_size": 32, "lr": 0.005, "k": 5, "num_epochs": 20, "loss": 0.12838678508996965},
+  {"batch_size": 32, "lr": 0.01, "k": 5, "num_epochs": 20, "loss": 0.08833151608705521},
+  {"batch_size": 32, "lr": 0.02, "k": 5, "num_epochs": 20, "loss": 0.06396659016609192},
+  {"batch_size": 32, "lr": 0.03, "k": 5, "num_epochs": 20, "loss": 0.05486392602324486},
+  
+  {"batch_size": 16, "lr": 0.005, "k": 5, "num_epochs": 10, "loss": 0.12079216837882996},
+  {"batch_size": 16, "lr": 0.01, "k": 5, "num_epochs": 10, "loss": 0.08720420449972152},
+  {"batch_size": 16, "lr": 0.02, "k": 5, "num_epochs": 10, "loss": 0.061857862025499345},
+  {"batch_size": 16, "lr": 0.03, "k": 5, "num_epochs": 10, "loss": 0.061678759008646014},
+
+  {"batch_size": 16, "lr": 0.005, "k": 5, "num_epochs": 12, "loss": 0.11322908252477645},
+  {"batch_size": 16, "lr": 0.01, "k": 5, "num_epochs": 12, "loss": 0.07463193014264106},
+  {"batch_size": 16, "lr": 0.02, "k": 5, "num_epochs": 12, "loss": 0.057476555556058885},
+  {"batch_size": 16, "lr": 0.03, "k": 5, "num_epochs": 12, "loss": 0.14834137856960297},
+  
+  {"batch_size": 16, "lr": 0.005, "k": 5, "num_epochs": 14, "loss": 0.09879815131425858},
+  {"batch_size": 16, "lr": 0.01, "k": 5, "num_epochs": 14, "loss": 0.07089186757802964},
+  {"batch_size": 16, "lr": 0.02, "k": 5, "num_epochs": 14, "loss": 0.05042596906423569},
+  {"batch_size": 16, "lr": 0.03, "k": 5, "num_epochs": 14, "loss": 2.1737658113241194},
+  
+  {"batch_size": 16, "lr": 0.005, "k": 5, "num_epochs": 16, "loss": 0.09399663954973221},
+  {"batch_size": 16, "lr": 0.01, "k": 5, "num_epochs": 16, "loss": 0.06289604157209397},
+  {"batch_size": 16, "lr": 0.02, "k": 5, "num_epochs": 16, "loss": 0.048747402429580686},
+  {"batch_size": 16, "lr": 0.03, "k": 5, "num_epochs": 16, "loss": 1.3684816181659698},
+
+  {"batch_size": 16, "lr": 0.005, "k": 5, "num_epochs": 18, "loss": 0.08854180499911309},
+  {"batch_size": 16, "lr": 0.01, "k": 5, "num_epochs": 18, "loss": 0.05939057245850563},
+  {"batch_size": 16, "lr": 0.02, "k": 5, "num_epochs": 18, "loss": 0.049407337605953214},
+  {"batch_size": 16, "lr": 0.03, "k": 5, "num_epochs": 18, "loss": 3.1143378645181654},
+  
+  {"batch_size": 16, "lr": 0.005, "k": 5, "num_epochs": 20, "loss": 0.08430748656392098},
+  {"batch_size": 16, "lr": 0.01, "k": 5, "num_epochs": 20, "loss": 0.060136540234088896},
+  {"batch_size": 16, "lr": 0.02, "k": 5, "num_epochs": 20, "loss": 0.04850870966911316},
+  {"batch_size": 16, "lr": 0.03, "k": 5, "num_epochs": 20, "loss": 0.789030784368515},
+  
+  {"batch_size": 8, "lr": 0.005, "k": 5, "num_epochs": 10, "loss": 0.08777639269828796},
+  {"batch_size": 8, "lr": 0.01, "k": 5, "num_epochs": 10, "loss": 0.06033413037657738},
+  {"batch_size": 8, "lr": 0.02, "k": 5, "num_epochs": 10, "loss": 3.2625428713858127},
+  {"batch_size": 8, "lr": 0.03, "k": 5, "num_epochs": 10, "loss": 31766.08040161133}
+
+]
