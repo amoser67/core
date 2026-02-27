@@ -53,11 +53,12 @@ class KaggleHouse(d2l.DataModule):
         numeric_features = numeric_dtypes.columns.tolist()
         # numeric_features = features.columns.get_indexer(numeric_column_names)
 
-        # print(numeric_features)
+        print(numeric_features)
         # print(numeric_features.index)
         # print(numeric_features)
         # print(features.dtypes)
         # return
+
         features[numeric_features] = features[numeric_features].apply(
             lambda x: (x - x.mean()) / (x.std()))
 
@@ -71,6 +72,7 @@ class KaggleHouse(d2l.DataModule):
         self.train = features[:self.raw_train.shape[0]].copy()
         self.train[label] = self.raw_train[label]
         self.val = features[self.raw_train.shape[0]:].copy()
+        return features.copy()
 
     def get_dataloader(self, train):
         label = "SalePrice"
@@ -86,13 +88,12 @@ class KaggleHouse(d2l.DataModule):
 
 
 
-# print(data.raw_train.shape)
-# print(data.raw_val.shape)
-
-
-# Returns the ith fold of the data in a K-fold cross-validation procedure.
-# It slices out the ith segment as validation data and returns the rest as training data.
 def k_fold_data(data, k):
+    """
+    Returns the ith fold of the data in a K-fold cross-validation procedure.
+    It slices out the ith segment as validation data and returns the rest as training data.
+    """
+
     # KaggleHouse data modules.
     rets = []
 
@@ -114,8 +115,11 @@ def k_fold_data(data, k):
     return rets
 
 
-# Average validation error is returned when we train K times in the K-fold cross-validation.
 def k_fold(trainer, data, k, lr):
+    """
+    Average validation error is returned when we train K times in the K-fold cross-validation.
+    """
+
     val_loss = []
     models = []
 
@@ -137,10 +141,11 @@ def k_fold(trainer, data, k, lr):
         # Add the model to our models array.
         models.append(model)
 
+    print(val_loss)
     print(f"Average validation log MSE = {sum(val_loss) / len(val_loss)}")
 
-    # return models
-    return sum(val_loss) / len(val_loss)
+    return models
+    # return sum(val_loss) / len(val_loss)
 
 
 
@@ -152,20 +157,44 @@ def compute_avg_loss(params):
     return val_loss
 
 
-learning_rates = [0.005, 0.01, 0.02, 0.03]  # , 0.06, 0.08, 0.1]
-losses = []
-for lr in learning_rates:
-    hyper_parameters = {
-        "batch_size": 32,
-        "lr": lr,
-        "k": 5,
-        "num_epochs": 20
-    }
-    hyper_parameters["loss"] = compute_avg_loss(hyper_parameters)
-    losses.append(hyper_parameters)
+# learning_rates = [0.005, 0.01, 0.02, 0.03]  # , 0.06, 0.08, 0.1]
+# losses = []
+# for lr in learning_rates:
+#     hyper_parameters = {
+#         "batch_size": 32,
+#         "lr": lr,
+#         "k": 5,
+#         "num_epochs": 20
+#     }
+#     hyper_parameters["loss"] = compute_avg_loss(hyper_parameters)
+#     losses.append(hyper_parameters)
 
 
-print(losses)
+
+# print(losses)
+params = {
+    "batch_size": 32,
+    "lr": 0.01,
+    "k": 5,
+    "num_epochs": 12
+}
+data = KaggleHouse(batch_size=params["batch_size"])
+preprocessed_data = data.preprocess()
+# preprocessed_data.to_csv('preprocessed_data.csv', index=False)
+#
+# trainer = d2l.Trainer(max_epochs=params["num_epochs"])
+# # val_loss = k_fold(trainer, data, k=params["k"], lr=params["lr"])
+# # return val_loss
+# models = k_fold(trainer, data, k=params["k"], lr=params["lr"])
+# # return models
+#
+# preds = [model(torch.tensor(data.val.values.astype(float), dtype=torch.float32))
+#          for model in models]
+# # Taking exponentiation of predictions in the logarithm scale
+# ensemble_preds = torch.exp(torch.cat(preds, 1)).mean(1)
+# submission = pd.DataFrame({'Id':data.raw_val.Id,
+#                            'SalePrice':ensemble_preds.detach().numpy()})
+# submission.to_csv('submission-3.csv', index=False)
 
 """
 Hyperparameter Analysis
@@ -186,7 +215,33 @@ Solid choice:
     - Lr = 0.02
     - Batch size = 16
     - Num epochs = 16
+    - Result: .2
+    
 
+==================
+
+K fold losses with first sub values: 
+[0.03522426262497902, 0.076180599629879, 0.04366099834442139, 0.033396344631910324, 0.04994451254606247]
+[0.05072057992219925, 0.07779184728860855, 0.04780907928943634, 0.03473088517785072, 0.05592658743262291]
+
+k=10
+
+
+
+"batch_size": 32,
+"lr": 0.01,
+"k": 10,
+"num_epochs": 16
+[0.08303093910217285, 0.06910906732082367, 0.11860129982233047, 0.11547736823558807, 0.08537093549966812,
+ 0.07593133300542831, 0.08127707242965698, 0.06016569212079048, 0.12053171545267105, 0.10609477758407593]
 
 """
 
+"""
+Numeric features:
+['MSSubClass', 'LotFrontage', 'LotArea', 'OverallQual', 'OverallCond', 'YearBuilt', 'YearRemodAdd', 'MasVnrArea',
+ 'BsmtFinSF1', 'BsmtFinSF2', 'BsmtUnfSF', 'TotalBsmtSF', '1stFlrSF', '2ndFlrSF', 'LowQualFinSF', 'GrLivArea',
+ 'BsmtFullBath', 'BsmtHalfBath', 'FullBath', 'HalfBath', 'BedroomAbvGr', 'KitchenAbvGr', 'TotRmsAbvGrd', 'Fireplaces',
+ 'GarageYrBlt', 'GarageCars', 'GarageArea', 'WoodDeckSF', 'OpenPorchSF', 'EnclosedPorch', '3SsnPorch', 'ScreenPorch',
+ 'PoolArea', 'MiscVal', 'MoSold', 'YrSold']
+"""
