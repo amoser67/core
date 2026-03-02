@@ -30,6 +30,11 @@ class KaggleHouse(d2l.DataModule):
             DataFrame: Two-dimensional, size-mutable, potentially heterogeneous tabular data structure with labeled axes (rows and columns).
 
         """
+
+        # Drop rows with Ids: 250, 314, 336, ane 707
+        # self.raw_train.drop([249, 313, 335, 706], inplace=True)
+        # self.raw_train.reset_index(inplace=True)
+
         # Remove the ID and label columns.
         label = "SalePrice"
         features = pd.concat(  # Returns a DataFrame.
@@ -99,6 +104,7 @@ def k_fold_data(data, k):
 
     # The (max) partition size of the rows in X when split into k groups.
     fold_size = data.train.shape[0] // k  # // is the floor division operator, i.e. divide, then floor.
+    print(f"Fold size: {fold_size}")
 
     # For each group of rows:
     for j in range(k):
@@ -141,12 +147,9 @@ def k_fold(trainer, data, k, lr):
         # Add the model to our models array.
         models.append(model)
 
-    print(val_loss)
-    print(f"Average validation log MSE = {sum(val_loss) / len(val_loss)}")
+    avg_val_loss = sum(val_loss) / len(val_loss)
 
-    return models
-    # return sum(val_loss) / len(val_loss)
-
+    return models, val_loss, avg_val_loss
 
 
 def compute_avg_loss(params):
@@ -155,6 +158,85 @@ def compute_avg_loss(params):
     trainer = d2l.Trainer(max_epochs=params["num_epochs"])
     val_loss = k_fold(trainer, data, k=params["k"], lr=params["lr"])
     return val_loss
+
+
+def create_submission(params, filename):
+    data = KaggleHouse(batch_size=params["batch_size"])
+    data.preprocess()
+    # print(f"Data val shape: {data.val.shape}")
+    # return
+    trainer = d2l.Trainer(max_epochs=params["num_epochs"])
+    models, val_loss, avg_val_loss = k_fold(trainer, data, k=params["k"], lr=params["lr"])
+    print(f"Val losses: {val_loss}")
+    print(f"Avg val loss: {avg_val_loss}")
+    preds = [model(torch.tensor(data.val.values.astype(float), dtype=torch.float32))
+             for model in models]
+    # Taking exponentiation of predictions in the logarithm scale
+    ensemble_preds = torch.exp(torch.cat(preds, 1)).mean(1)
+    submission = pd.DataFrame({'Id': data.raw_val.Id,
+                               'SalePrice': ensemble_preds.detach().numpy()})
+    submission.to_csv(filename, index=False)
+
+
+def test_k_fold_params(params):
+    data = KaggleHouse(batch_size=params["batch_size"])
+    data.preprocess()
+
+    print(f"Data train shape: {data.train.shape}")
+
+    trainer = d2l.Trainer(max_epochs=params["num_epochs"])
+
+    models, val_loss, avg_val_loss = k_fold(trainer, data, k=params["k"], lr=params["lr"])
+    print(f"Val loss: {val_loss}")
+    print(f"Avg val loss: {avg_val_loss}")
+
+    # models, val_loss, avg_val_loss = k_fold(trainer, data, k=params["k"], lr=params["lr"])
+    #
+    # print(f"Val losses: {val_loss}")
+    # print(f"Avg val loss: {avg_val_loss}")
+
+
+def plain_lin_regression(trainer, data, lr):
+    # Create a linear regression model.
+    model = d2l.LinearRegression(lr)
+    model.board.yscale = "log"
+    trainer.fit(model, data)
+
+    # Add the final validation loss value from the model to our val_loss array.
+    # val_loss = float(model.board.data["val_loss"][-1].y)
+
+    # return model, val_loss
+    return model
+
+
+def test_lin_regression_params(params):
+    data = KaggleHouse(batch_size=params["batch_size"])
+    data.preprocess()
+    # idx = range(1200, 1460)
+    # data = KaggleHouse(
+    #     params["batch_size"],
+    #     data.train.drop(index=idx),
+    #     data.train.loc[idx]
+    # )
+
+    print(f"Data train shape: {data.train.shape}")
+
+    trainer = d2l.Trainer(max_epochs=params["num_epochs"])
+
+    # model, val_loss = plain_lin_regression(trainer, data, lr=params["lr"])
+    model = plain_lin_regression(trainer, data, lr=params["lr"])
+    d2l.plt.show()
+    # print(f"Val loss: {val_loss}")
+
+    preds = [model(torch.tensor(data.val.values.astype(float), dtype=torch.float32))]
+
+    # Taking exponentiation of predictions in the logarithm scale
+    ensemble_preds = torch.exp(preds[0])
+    print(ensemble_preds.detach().numpy().flatten().shape)
+    print(data.raw_val.Id.shape)
+    submission = pd.DataFrame({'Id': data.raw_val.Id,
+                               'SalePrice': ensemble_preds.detach().numpy().flatten()})
+    submission.to_csv("lin-submission-3.csv", index=False)
 
 
 # learning_rates = [0.005, 0.01, 0.02, 0.03]  # , 0.06, 0.08, 0.1]
@@ -173,28 +255,56 @@ def compute_avg_loss(params):
 
 # print(losses)
 params = {
-    "batch_size": 32,
-    "lr": 0.01,
-    "k": 5,
-    "num_epochs": 12
+    "batch_size": 16,
+    "lr": 0.02,
+    "k": 4,
+    "num_epochs": 32
 }
-data = KaggleHouse(batch_size=params["batch_size"])
-preprocessed_data = data.preprocess()
-# preprocessed_data.to_csv('preprocessed_data.csv', index=False)
-#
-# trainer = d2l.Trainer(max_epochs=params["num_epochs"])
-# # val_loss = k_fold(trainer, data, k=params["k"], lr=params["lr"])
-# # return val_loss
-# models = k_fold(trainer, data, k=params["k"], lr=params["lr"])
-# # return models
-#
-# preds = [model(torch.tensor(data.val.values.astype(float), dtype=torch.float32))
-#          for model in models]
-# # Taking exponentiation of predictions in the logarithm scale
-# ensemble_preds = torch.exp(torch.cat(preds, 1)).mean(1)
-# submission = pd.DataFrame({'Id':data.raw_val.Id,
-#                            'SalePrice':ensemble_preds.detach().numpy()})
-# submission.to_csv('submission-3.csv', index=False)
+# test_params(params)
+test_lin_regression_params(params)
+
+"""
+16, 16, 0.02
+val loss: 0.0534
+
+16, 26, .02
+val loss: .043
+
+16, 30, .02
+val loss: .041
+
+16, 32, .02
+val loss: 0.0389
+
+16, 26, .015
+val loss: .0508
+
+16, 26, .02
+val loss: .0506
+
+32, 18, 0.01
+val loss: .1008
+
+32, 18, 0.02
+val loss: .065
+
+32, 20, 0.02
+val loss: .0617
+
+32, 22, 0.02
+val loss: .0578
+
+32, 26, 0.02
+val loss: .0570
+
+32, 20, 0.025
+val loss: .089
+
+32, 26, .015
+val loss: .0717
+
+"""
+
 
 """
 Hyperparameter Analysis

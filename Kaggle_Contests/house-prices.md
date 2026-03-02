@@ -68,6 +68,62 @@ question are rows 292 through 583. We note the following about those rows:
   - Next three largest are (159_000, 115_149, 70_761).
   - Largest lot area in test data is 56_600.
 
+Let's try to remove the 4 largest lot area examples from the data.
+
+Removed 4 largest lot area rows from the data. Reduced k from 5 to 4 so it partitioned evenly.
+
+- Model: K-fold cross validation, k=4
+- Parameters:
+  - Learning rate: .02
+  - Batch size: 16
+  - Num epochs: 16
+- Results
+  - Training data validation error: 0.0516
+    - Per fold validation error: `[0.0567, 0.0535, 0.0386, 0.0577]`
+  - Test data validation error: .20950
+
+
+## Submission 5
+Let's try pure linear regression.
+
+- Model: Lin regression
+- Parameters:
+  - Learning rate: .02
+  - Batch size: 16
+  - Num epochs: 16
+- Results
+  - Training data validation error: 0.0534
+  - Test data validation error: .20901
+
+  
+## Submission 6
+Let's try pure linear regression.
+
+- Model: Lin regression
+- Parameters:
+  - Learning rate: .02
+  - Batch size: 16
+  - Num epochs: 26
+- Results
+  - Training data validation error: 0.043
+  - Test data validation error: .17720
+  - Kaggle submission rank: 3356/3961 (bottom 15.3%)
+
+  
+## Submission 7
+Let's try pure linear regression.
+
+- Model: Lin regression
+- Parameters:
+  - Learning rate: .02
+  - Batch size: 16
+  - Num epochs: 32
+- Results
+  - Training data validation error: 0.0389
+  - Test data validation error: .18913
+
+
+
 
 
 ## Data notes
