@@ -92,6 +92,19 @@ class KaggleHouse(d2l.DataModule):
         return self.get_tensorloader(tensors, train)
 
 
+class MLP(d2l.Module):
+    def __init__(self, num_hiddens, lr):
+        super().__init__()
+        self.save_hyperparameters()
+        self.net = nn.Sequential(nn.LazyLinear(num_hiddens),
+                                 nn.ReLU(),
+                                 nn.Dropout(0.5),
+                                 nn.LazyLinear(1))
+
+    def loss(self, Y_hat, Y, averaged=True):
+        loss = nn.MSELoss()
+        return loss(Y_hat, Y) if not averaged else loss(Y_hat, Y) / len(Y)
+
 
 def k_fold_data(data, k):
     """
@@ -121,7 +134,7 @@ def k_fold_data(data, k):
     return rets
 
 
-def k_fold(trainer, data, k, lr):
+def k_fold(trainer, data, params):
     """
     Average validation error is returned when we train K times in the K-fold cross-validation.
     """
@@ -130,9 +143,10 @@ def k_fold(trainer, data, k, lr):
     models = []
 
     # For the k KaggleHouse data modules returned by k_fold_data:
-    for i, data_fold in enumerate(k_fold_data(data, k)):
+    for i, data_fold in enumerate(k_fold_data(data, params["k"])):
         # Create a linear regression model.
-        model = d2l.LinearRegression(lr)
+        # model = d2l.LinearRegression(lr)
+        model = MLP(params["num_hiddens"], params["lr"])
         model.board.yscale = "log"
 
         # Unclear why we don't want to display any board beyond the first.
@@ -166,7 +180,7 @@ def create_submission(params, filename):
     # print(f"Data val shape: {data.val.shape}")
     # return
     trainer = d2l.Trainer(max_epochs=params["num_epochs"])
-    models, val_loss, avg_val_loss = k_fold(trainer, data, k=params["k"], lr=params["lr"])
+    models, val_loss, avg_val_loss = k_fold(trainer, data, params)
     print(f"Val losses: {val_loss}")
     print(f"Avg val loss: {avg_val_loss}")
     preds = [model(torch.tensor(data.val.values.astype(float), dtype=torch.float32))
@@ -186,7 +200,7 @@ def test_k_fold_params(params):
 
     trainer = d2l.Trainer(max_epochs=params["num_epochs"])
 
-    models, val_loss, avg_val_loss = k_fold(trainer, data, k=params["k"], lr=params["lr"])
+    models, val_loss, avg_val_loss = k_fold(trainer, data, params)
     print(f"Val loss: {val_loss}")
     print(f"Avg val loss: {avg_val_loss}")
 
@@ -197,46 +211,78 @@ def test_k_fold_params(params):
 
 
 def plain_lin_regression(trainer, data, lr):
-    # Create a linear regression model.
     model = d2l.LinearRegression(lr)
     model.board.yscale = "log"
     trainer.fit(model, data)
-
-    # Add the final validation loss value from the model to our val_loss array.
-    # val_loss = float(model.board.data["val_loss"][-1].y)
-
-    # return model, val_loss
-    return model
+    val_loss = float(model.board.data["val_loss"][-1].y)
+    return model, val_loss
 
 
 def test_lin_regression_params(params):
     data = KaggleHouse(batch_size=params["batch_size"])
     data.preprocess()
-    # idx = range(1200, 1460)
-    # data = KaggleHouse(
-    #     params["batch_size"],
-    #     data.train.drop(index=idx),
-    #     data.train.loc[idx]
-    # )
-
-    print(f"Data train shape: {data.train.shape}")
-
+    idx = range(1200, 1460)
+    data = KaggleHouse(
+        params["batch_size"],
+        data.train.drop(index=idx),
+        data.train.loc[idx]
+    )
     trainer = d2l.Trainer(max_epochs=params["num_epochs"])
-
-    # model, val_loss = plain_lin_regression(trainer, data, lr=params["lr"])
-    model = plain_lin_regression(trainer, data, lr=params["lr"])
+    model, val_loss = plain_lin_regression(trainer, data, lr=params["lr"])
     d2l.plt.show()
-    # print(f"Val loss: {val_loss}")
+    print(f"Val loss: {val_loss}")
 
+
+def create_lin_regression_submission(params, filename):
+    data = KaggleHouse(batch_size=params["batch_size"])
+    data.preprocess()
+    trainer = d2l.Trainer(max_epochs=params["num_epochs"])
+    model = d2l.LinearRegression(params["lr"])
+    model.board.yscale = "log"
+    trainer.fit(model, data)
     preds = [model(torch.tensor(data.val.values.astype(float), dtype=torch.float32))]
-
     # Taking exponentiation of predictions in the logarithm scale
     ensemble_preds = torch.exp(preds[0])
-    print(ensemble_preds.detach().numpy().flatten().shape)
-    print(data.raw_val.Id.shape)
     submission = pd.DataFrame({'Id': data.raw_val.Id,
                                'SalePrice': ensemble_preds.detach().numpy().flatten()})
-    submission.to_csv("lin-submission-3.csv", index=False)
+    submission.to_csv(filename, index=False)
+
+
+
+def test_mlp_params(params):
+    data = KaggleHouse(batch_size=params["batch_size"])
+    data.preprocess()
+    idx = range(1200, 1460)
+    data = KaggleHouse(
+        params["batch_size"],
+        data.train.drop(index=idx),
+        data.train.loc[idx]
+    )
+
+    trainer = d2l.Trainer(max_epochs=params["num_epochs"])
+    model = MLP(params["num_hiddens"], params["lr"])
+    model.board.yscale = "log"
+    trainer.fit(model, data)
+    val_loss = float(model.board.data["val_loss"][-1].y)
+    d2l.plt.show()
+    print(f"Val loss: {val_loss}")
+
+
+def create_mlp_submission(params, filename):
+    data = KaggleHouse(batch_size=params["batch_size"])
+    data.preprocess()
+
+    trainer = d2l.Trainer(max_epochs=params["num_epochs"])
+    model = MLP(params["num_hiddens"], params["lr"])
+    model.board.yscale = "log"
+    trainer.fit(model, data)
+
+    preds = [model(torch.tensor(data.val.values.astype(float), dtype=torch.float32))]
+    # Taking exponentiation of predictions in the logarithm scale
+    ensemble_preds = torch.exp(preds[0])
+    submission = pd.DataFrame({'Id': data.raw_val.Id,
+                               'SalePrice': ensemble_preds.detach().numpy().flatten()})
+    submission.to_csv(filename, index=False)
 
 
 # learning_rates = [0.005, 0.01, 0.02, 0.03]  # , 0.06, 0.08, 0.1]
@@ -257,11 +303,16 @@ def test_lin_regression_params(params):
 params = {
     "batch_size": 16,
     "lr": 0.02,
-    "k": 4,
-    "num_epochs": 32
+    "k": 5,
+    "num_epochs": 64,
+    "num_hiddens": 256
 }
 # test_params(params)
-test_lin_regression_params(params)
+# test_lin_regression_params(params)
+# test_mlp_params(params)
+# test_k_fold_params(params)
+create_submission(params, "mlp-k-fold-submission-4.csv")
+# create_mlp_submission(params, "mlp-submission-2.csv")
 
 """
 16, 16, 0.02
@@ -302,6 +353,67 @@ val loss: .089
 
 32, 26, .015
 val loss: .0717
+
+MLP
+
+16, 10, 0.02, 256
+val loss: .0165
+
+16, 12, 0.02, 256
+val loss: .0131
+
+16, 14, 0.02, 256
+val loss: .0129
+
+K-Fold MLP
+16, 14, 0.02, 256, k=5
+val loss: .0103
+
+K-Fold MLP
+16, 14, 0.02, 128, k=5
+val loss: .01000
+
+K-Fold MLP
+16, 16, 0.02, 128, k=5
+val loss: .0093
+
+K-Fold MLP
+16, 20, 0.02, 128, k=5
+val loss: .0083
+
+K-Fold MLP
+16, 32, 0.02, 128, k=5
+val loss: .00656
+
+K-Fold MLP
+16, 32, 0.02, 128, k=5, dropoout=0.5
+val loss: .0092
+
+K-Fold MLP
+16, 32, 0.02, 256, k=5, dropoout=0.5
+val loss: .0077 | .0095
+
+MLP
+16, 32, 0.02, 256, k=5, dropoout=0.5
+val loss: .013
+
+MLP
+16, 40, 0.02, 256, k=5, dropoout=0.5
+val loss: .0092
+
+MLP
+16, 64, 0.02, 256, k=5, dropoout=0.5
+val loss: .0055
+
+K-Fold MLP
+16, 64, 0.02, 256, k=5, dropoout=0.5
+val loss: .00797
+
+K-Fold MLP
+32, 64, 0.02, 256, k=5, dropoout=0.5
+val loss: .011
+
+
 
 """
 

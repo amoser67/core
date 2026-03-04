@@ -97,8 +97,6 @@ Let's try pure linear regression.
 
   
 ## Submission 6
-Let's try pure linear regression.
-
 - Model: Lin regression
 - Parameters:
   - Learning rate: .02
@@ -111,8 +109,6 @@ Let's try pure linear regression.
 
   
 ## Submission 7
-Let's try pure linear regression.
-
 - Model: Lin regression
 - Parameters:
   - Learning rate: .02
@@ -123,7 +119,77 @@ Let's try pure linear regression.
   - Test data validation error: .18913
 
 
+## Submission 8
+Let's try an MLP.
 
+- Parameters
+  - Learning rate: .02
+  - Batch size: 16
+  - Num epochs 14
+  - Num hidden units 256
+- Results
+  - Training data validation error: .0129
+  - Test data validation error: .32706
+
+### Analysis
+This is the first example where the training validation is lower than other submissions but the test validation error
+is higher.
+
+
+## Submission 9
+
+
+- Parameters
+  - Learning rate: .02
+  - Batch size: 16
+  - Num epochs 32
+  - Num hidden units 256
+- Results
+  - Training data validation error: .0099
+  - Test data validation error: .31323
+
+
+## Submission 9
+
+
+- Parameters
+  - Learning rate: .02
+  - Batch size: 16
+  - Num epochs 32
+  - Num hidden units 256
+- Results
+  - Training data validation error: .0099
+  - Test data validation error: .31323
+
+
+
+## Submission 10
+
+
+- Parameters (not positive here)
+  - Learning rate: .02
+  - Batch size: 16
+  - Num epochs 32
+  - Num hidden units 256
+  - Dropout .5
+- Results
+  - Training data validation error: .007
+  - Test data validation error: .26742
+
+
+## Submission 11
+
+K-fold MLP
+mlp-k-fold-submission-4.csv
+- Parameters
+  - Learning rate: .02
+  - Batch size: 16
+  - Num epochs 64
+  - Num hidden units 256
+  - Dropout .5
+- Results
+  - Training data validation error: .0061
+  - Test data validation error: .26603
 
 
 ## Data notes
