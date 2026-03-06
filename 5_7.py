@@ -2,6 +2,7 @@ import pandas as pd
 import torch
 from torch import nn
 import lib.d2l as d2l
+import xgboost as xgb
 
 """
 Kaggle House Price Prediction
@@ -105,6 +106,26 @@ class MLP(d2l.Module):
         loss = nn.MSELoss()
         return loss(Y_hat, Y) if not averaged else loss(Y_hat, Y) / len(Y)
 
+    # def configure_optimizers(self):
+    #     param_groups = [
+    #         {'params': [p for name, p in self.named_parameters() if 'weight' in name], 'weight_decay': .01},
+    #         {'params': [p for name, p in self.named_parameters() if 'bias' in name or 'bn' in name],
+    #          'weight_decay': 0.0}
+    #     ]
+    #     return torch.optim.SGD(param_groups, lr=self.lr)
+
+
+class WeightDecay(d2l.LinearRegression):
+    def __init__(self, wd, lr):
+        super().__init__(lr)
+        self.save_hyperparameters()
+        self.wd = wd
+
+    def configure_optimizers(self):
+        return torch.optim.SGD([
+            {'params': self.net.weight, 'weight_decay': self.wd},
+            {'params': self.net.bias}], lr=self.lr)
+
 
 def k_fold_data(data, k):
     """
@@ -146,6 +167,7 @@ def k_fold(trainer, data, params):
     for i, data_fold in enumerate(k_fold_data(data, params["k"])):
         # Create a linear regression model.
         # model = d2l.LinearRegression(lr)
+        # model = WeightDecay(wd=3, lr=params["lr"])
         model = MLP(params["num_hiddens"], params["lr"])
         model.board.yscale = "log"
 
@@ -211,7 +233,8 @@ def test_k_fold_params(params):
 
 
 def plain_lin_regression(trainer, data, lr):
-    model = d2l.LinearRegression(lr)
+    # model = d2l.LinearRegression(lr)
+    model = WeightDecay(wd=3, lr=lr)
     model.board.yscale = "log"
     trainer.fit(model, data)
     val_loss = float(model.board.data["val_loss"][-1].y)
@@ -237,7 +260,7 @@ def create_lin_regression_submission(params, filename):
     data = KaggleHouse(batch_size=params["batch_size"])
     data.preprocess()
     trainer = d2l.Trainer(max_epochs=params["num_epochs"])
-    model = d2l.LinearRegression(params["lr"])
+    model = WeightDecay(wd=3, lr=params["lr"])
     model.board.yscale = "log"
     trainer.fit(model, data)
     preds = [model(torch.tensor(data.val.values.astype(float), dtype=torch.float32))]
@@ -246,7 +269,6 @@ def create_lin_regression_submission(params, filename):
     submission = pd.DataFrame({'Id': data.raw_val.Id,
                                'SalePrice': ensemble_preds.detach().numpy().flatten()})
     submission.to_csv(filename, index=False)
-
 
 
 def test_mlp_params(params):
@@ -285,6 +307,39 @@ def create_mlp_submission(params, filename):
     submission.to_csv(filename, index=False)
 
 
+def test_xgboost_params(params):
+    data = KaggleHouse(batch_size=20)
+    data.preprocess()
+    idx = range(1200, 1460)
+    train_df = data.train.drop(index=idx)
+    val_df = data.train.loc[idx]
+    train_data = xgb.DMatrix(
+        train_df.drop(columns=["SalePrice"]),
+        label=train_df["SalePrice"]
+    )
+    val_data = xgb.DMatrix(
+        val_df.drop(columns=["SalePrice"]),
+        label=val_df["SalePrice"]
+    )
+    model = xgb.train(
+        params,
+        train_data,
+        num_boost_round=50000,
+        evals=[(val_data, "validation")],
+        early_stopping_rounds=5
+    )
+    predictions = model.predict(xgb.DMatrix(data.val))
+
+    preds = [model.predict(xgb.DMatrix(data.val))]
+    # Taking exponentiation of predictions in the logarithm scale
+    submission = pd.DataFrame({'Id': data.raw_val.Id,
+                               'SalePrice': model.predict(xgb.DMatrix(data.val)).flatten()})
+    submission.to_csv("xgboost-3.csv", index=False)
+    print(predictions)
+    print(f"Best iteration: {model.best_iteration}")
+    print(f"Best score: {model.best_score}")
+
+
 # learning_rates = [0.005, 0.01, 0.02, 0.03]  # , 0.06, 0.08, 0.1]
 # losses = []
 # for lr in learning_rates:
@@ -300,21 +355,51 @@ def create_mlp_submission(params, filename):
 
 
 # print(losses)
+# params = {
+#     "batch_size": 20,
+#     "lr": 0.02,
+#     "k": 5,
+#     "num_epochs": 26,
+#     "num_hiddens": 256
+# }
 params = {
-    "batch_size": 16,
-    "lr": 0.02,
-    "k": 5,
-    "num_epochs": 64,
-    "num_hiddens": 256
+    "booster": "gblinear",
+    "device": "cuda",
+    "max_depth": 6,
+    "eta": .2,
+    "objective": "reg:squaredlogerror",
+    "min_child_weight": 0
 }
-# test_params(params)
-# test_lin_regression_params(params)
-# test_mlp_params(params)
+
 # test_k_fold_params(params)
-create_submission(params, "mlp-k-fold-submission-4.csv")
-# create_mlp_submission(params, "mlp-submission-2.csv")
+test_xgboost_params(params)
+
 
 """
+K-fold Lin w/Weight Decay
+16, 26, 0.02, wd=3
+.02789
+
+Lin w/Weight Decay
+16, 26, 0.02, wd=2
+.0371 | .0429
+
+Lin w/Weight Decay
+16, 26, 0.02, wd=3
+.0367 | .0368 | .037
+
+Lin w/Weight Decay
+16, 28, 0.02, wd=3
+.0440
+
+Lin w/Weight Decay
+16, 24, 0.02, wd=3
+.0422
+
+Lin w/Weight Decay
+16, 26, 0.02, wd=4
+.0394 | .0433
+
 16, 16, 0.02
 val loss: 0.0534
 

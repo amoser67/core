@@ -191,6 +191,83 @@ mlp-k-fold-submission-4.csv
   - Training data validation error: .0061
   - Test data validation error: .26603
 
+## Submission 12
+K-Fold linear regression with weight decay
+lin-wd-k-fold-submission-1.csv
+- Parameters
+  - Learning rate: .02
+  - Batch size: 16
+  - Num epochs 26
+  - Weight Decay 3
+- Results
+  - Training data validation error: .0334
+  - Test data validation error: .16800
+
+
+## Submission 13
+Linear regression with weight decay
+lin-submission-4.csv
+- Parameters
+  - Learning rate: .02
+  - Batch size: 16
+  - Num epochs 26
+  - Weight Decay 3
+- Results
+  - Training data validation error: .037
+  - Test data validation error: .18193
+
+## Submission 14
+K-Fold linear regression with weight decay
+lin-wd-k-fold-submission-2.csv
+- Parameters
+  - Learning rate: .02
+  - Batch size: 16
+  - Num epochs 26
+  - Weight Decay 3
+- Results
+  - Training data validation error: .0296
+  - Test data validation error: .17129
+
+
+## Submission 15
+XGBoost
+xgboost-1.csv
+- Parameters
+  ```
+      "booster": "gblinear",
+      "device": "cuda",
+      "max_depth": 3,
+      "eta": .3,
+      "objective": "reg:squaredlogerror",
+      "min_child_weight": 0
+  ```
+  - num_boost_round=30,000
+  - early_stopping_round=5
+  - batch_size=20
+- Results
+  - Train: .2445
+  - Test: .25037
+
+## Submission 16
+XGBoost
+xgboost-2.csv
+- Parameters
+  ```
+      "booster": "gblinear",
+      "device": "cuda",
+      "max_depth": 3,
+      "eta": .3,
+      "objective": "reg:squaredlogerror",
+      "min_child_weight": 0
+  ```
+  - num_boost_round=50,000
+  - early_stopping_round=5
+  - batch_size=20
+- Results
+  - Train: .19935
+  - Test: .19557
+
+
 
 ## Data notes
 26 Neighborhoods
