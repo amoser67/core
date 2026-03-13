@@ -325,8 +325,9 @@ def test_xgboost_params(params):
         params,
         train_data,
         num_boost_round=50000,
+        # 500 - 1.9
         evals=[(val_data, "validation")],
-        early_stopping_rounds=5
+        early_stopping_rounds=10
     )
     predictions = model.predict(xgb.DMatrix(data.val))
 
@@ -363,10 +364,11 @@ def test_xgboost_params(params):
 #     "num_hiddens": 256
 # }
 params = {
-    "booster": "gblinear",
+    "booster": "dart",
     "device": "cuda",
     "max_depth": 6,
-    "eta": .2,
+    "lambda": 0,
+    "eta": .3,
     "objective": "reg:squaredlogerror",
     "min_child_weight": 0
 }
