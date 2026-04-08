@@ -68,23 +68,82 @@ X = X.reshape((1, 1, 6, 8))
 Y = Y.reshape((1, 1, 6, 7))
 lr = 3e-2
 
+
+X_diag = torch.tensor([
+    [1., 0., 0., 0., 1., 0.],
+    [0., 1., 0., 1., 0., 0.],
+    [0., 0., 1., 0., 0., 0.],
+    [0., 1., 0., 1., 0., 0.],
+    [1., 0., 0., 0., 1., 0.],
+    [0., 0., 0., 0., 0., 1.]
+])
+Y_diag = corr2d(X_diag, K)
+# print(Y_diag)
+# tensor([[ 1.,  0.,  0., -1.,  1.],
+#         [-1.,  1., -1.,  1.,  0.],
+#         [ 0., -1.,  1.,  0.,  0.],
+#         [-1.,  1., -1.,  1.,  0.],
+#         [ 1.,  0.,  0., -1.,  1.],
+#         [ 0.,  0.,  0.,  0., -1.]])
+
+Y_diag_t = corr2d(X_diag.t(), K)
+# print(Y_diag_t)
+# tensor([[ 1.,  0.,  0., -1.,  1.],
+#         [-1.,  1., -1.,  1.,  0.],
+#         [ 0., -1.,  1.,  0.,  0.],
+#         [-1.,  1., -1.,  1.,  0.],
+#         [ 1.,  0.,  0., -1.,  1.],
+#         [ 0.,  0.,  0.,  0., -1.]]
+# Transpose result is identical to original.
+
+
+
+Y_diag_kt = corr2d(X_diag, K.t())
+# print(Y_diag_kt)
+# tensor([[ 1., -1.,  0., -1.,  1.,  0.],
+#         [ 0.,  1., -1.,  1.,  0.,  0.],
+#         [ 0., -1.,  1., -1.,  0.,  0.],
+#         [-1.,  1.,  0.,  1., -1.,  0.],
+#         [ 1.,  0.,  0.,  0.,  1., -1.]])
+# Transposing K transposes the output.
+
+
 for i in range(10):
     Y_hat = conv2d(X)
     l = (Y_hat - Y) ** 2
     conv2d.zero_grad()
+
+    # .backward() := Accumulates the gradients in the .grad attribute of the leaf tensors
+    # (typically the model's parameters).
+
     l.sum().backward()
     # Update the kernel
+    print(conv2d.weight.data[:])
     conv2d.weight.data[:] -= lr * conv2d.weight.grad
     if (i + 1) % 2 == 0:
         print(f"epoch {i + 1}, loss {l.sum():.3f}")
 
-# epoch 2, loss 14.239
-# epoch 4, loss 4.133
-# epoch 6, loss 1.408
-# epoch 8, loss 0.529
-# epoch 10, loss 0.209
 
-learned_kernel = conv2d.weight.data.reshape((1, 2))
-print(learned_kernel)
+"""
+Loss is a 6x7 matrix.
+Loss.sum() is a 1x1 tensor.
+
+conv2d.weight.grad and conv2d.weight.data[:] are tensors with size [1, 1, 1, 2] (i.e. [[[[x, y]]]]).
+
+print(conv2d.weight):
+    Parameter containing: tensor([[[[ 0.9757, -0.9536]]]], requires_grad=True)
+    
+print(conv2d.weight.data[:])
+    tensor([[[[ 0.2568, -0.5425]]]])
+    
+print(conv2d.weight.data)
+    tensor([[[[ 0.9232, -1.0330]]]])
+    
+"""
+
+# learned_kernel = conv2d.weight.data.reshape((1, 2))
+# print(learned_kernel)
 # We see that the learned_kernel is similar to the [1, -1] kernel we were training it to identify.
 # tensor([[ 0.9714, -0.9978]])
+
+print(torch.tensor([[[[ 0.9324, -0.8054]]]]).shape)
