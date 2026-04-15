@@ -332,6 +332,7 @@ class Trainer(d2l.HyperParameters):
         """Defined in :numref:`sec_use_gpu`"""
         self.save_hyperparameters()
         self.gpus = [d2l.gpu(i) for i in range(min(num_gpus, d2l.num_gpus()))]
+        print(self.gpus)
 
     def prepare_batch(self, batch):
         """Defined in :numref:`sec_use_gpu`"""
@@ -483,6 +484,9 @@ class FashionMNIST(d2l.DataModule):
         X, y = batch
         if not labels:
             labels = self.text_labels(y)
+        # 'Squeeze': Returns a tensor with all specified dimensions of input of size 1 removed.
+        # The returned tensor shares the storage with the input tensor, so changing the contents of
+        # one affects the other.
         d2l.show_images(X.squeeze(1), nrows, ncols, titles=labels)
 
 
@@ -3316,6 +3320,8 @@ def show_images(imgs, num_rows, num_cols, titles=None, scale=1.5):
     figsize = (num_cols * scale, num_rows * scale)
     _, axes = d2l.plt.subplots(num_rows, num_cols, figsize=figsize)
     axes = axes.flatten()
+    # zip object: An iterator of tuples where the first item in each passed iterator is paired together,
+    # and then the second item in each passed iterator are paired together etc.
     for i, (ax, img) in enumerate(zip(axes, imgs)):
         try:
             img = d2l.numpy(img)

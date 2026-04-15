@@ -3,7 +3,7 @@ from torch import nn
 import lib.d2l as d2l
 
 
-# device = torch.device("cuda:0")
+device = torch.device("cuda:0")
 
 
 def init_cnn(module):
@@ -78,21 +78,54 @@ Sigmoid output shape:	 torch.Size([1, 84])
 Linear output shape:	 torch.Size([1, 10])
 """
 
-trainer = d2l.Trainer(max_epochs=15, num_gpus=1)
-data = d2l.FashionMNIST(batch_size=128)
-model = LeNet(
-    lr=0.1,
-    # conv_window_size=5,
-    # conv_1_padding=2,
-    # num_output_channels_1=8,
-    # num_output_channels_2=16
-)
-# model.to(device)
-model.apply_init([next(iter(data.get_dataloader(True)))[0]], init_cnn)
-trainer.fit(model, data)
-d2l.plt.show()
-print("Val loss:")
-print(float(model.board.data["val_loss"][-1].y))
+#
+# class Reshape(torch.nn.Module):
+#     def forward(self, x):
+#         return x.view(-1, 1, 28, 28)
+#
+#
+# net = torch.nn.Sequential(
+#     Reshape(),
+#     nn.Conv2d(1, 6, kernel_size=5, padding=2), nn.ReLU(),
+#     nn.MaxPool2d(kernel_size=2, stride=2),
+#     nn.Conv2d(6, 16, kernel_size=5), nn.ReLU(),
+#     nn.MaxPool2d(kernel_size=2, stride=2),
+#
+#     nn.Flatten(),
+#
+#     nn.Linear(16 * 5 * 5, 120), nn.ReLU(),
+#     nn.Linear(120, 84), nn.ReLU(),
+#     nn.Linear(84, 10)
+# )
+#
+#
+#
+# trainer = d2l.Trainer(max_epochs=15, num_gpus=1)
+# data = d2l.FashionMNIST(batch_size=128)
+# print(data.get_dataloader(True))
+# x_first_relu_layer = net[0:3](data.get_dataloader(True)).cpu().detach().numpy()[0:9, 1, :, :]
+#
+# d2l.show_images(x_first_relu_layer.reshape(9, 28, 28), 1, 9)
+#
+# trainer = d2l.Trainer(max_epochs=15, num_gpus=1)
+# data = d2l.FashionMNIST(batch_size=128)
+# model = LeNet(
+#     lr=0.1,
+#     # conv_window_size=5,
+#     # conv_1_padding=2,
+#     # num_output_channels_1=8,
+#     # num_output_channels_2=16
+# )
+# # model.to(device)
+# model.apply_init([next(iter(data.get_dataloader(True)))[0]], init_cnn)
+# trainer.fit(model, data)
+# d2l.plt.show()
+# print("Val loss:")
+# print(float(model.board.data["val_loss"][-1].y))
+
+
+
+
 
 
 """
@@ -154,3 +187,38 @@ Exercise 2
     lr=.1 num_epochs=15: 0.28537
     
 """
+
+"""
+
+Exercise 4
+Display the activations of the first and second layer of LeNet for different inputs (e.g. sweaters and coats)
+
+"""
+
+# DataModule
+data = d2l.FashionMNIST(batch_size=256)
+pic = data.val.data[:2,:].type(torch.float32).unsqueeze(dim=1)
+print(pic)
+
+
+# torch.Module > d2l.Module > d2l.Classifier
+# model = LeNet(lr=0.1)
+#
+# # Init weights.
+# model.apply_init([next(iter(data.get_dataloader(True)))[0]], init_cnn)
+#
+# # d2l.Trainer
+# trainer = d2l.Trainer(max_epochs=10, num_gpus=1)
+#
+# trainer.fit(model, data)
+#
+# # Shows a sneaker and a long sleeve shirt image.
+# # shape [2, 28, 28] => [2, 1, 28, 28]
+# pic = data.val.data[:2,:].type(torch.float32).unsqueeze(dim=1)
+# pic = pic.to(device)
+# d2l.show_images(pic.squeeze().cpu(),1,2)
+# # d2l.plt.show()
+#
+# # d2l.show_images(model.net[0](pic).squeeze().cpu().detach().numpy().reshape(-1,28,28),4,8)
+# d2l.show_images(model.net[:2](pic).squeeze().detach().cpu().numpy().reshape(-1,28,28),4,8)
+# d2l.plt.show()
