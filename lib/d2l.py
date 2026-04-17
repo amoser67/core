@@ -332,7 +332,6 @@ class Trainer(d2l.HyperParameters):
         """Defined in :numref:`sec_use_gpu`"""
         self.save_hyperparameters()
         self.gpus = [d2l.gpu(i) for i in range(min(num_gpus, d2l.num_gpus()))]
-        print(self.gpus)
 
     def prepare_batch(self, batch):
         """Defined in :numref:`sec_use_gpu`"""
