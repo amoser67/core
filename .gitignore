@@ -3,3 +3,5 @@ __pycache__
 .idea
 preprocessed_data.csv
 submission.csv
+
+data
